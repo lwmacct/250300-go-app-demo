@@ -26,7 +26,7 @@ func main() {
 		// 如果程序只有一个命令, 建议使用 start 入口
 		mc.AddCobra(start.Cmd().Cobra())
 
-		// 客户端,
+		// 客户端
 		mc.AddCobra(client.Cmd().Cobra())
 
 		// 服务端, 如果不想客户端发现此命令, 则设置 你自己的 salt
