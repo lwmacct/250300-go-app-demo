@@ -5,7 +5,9 @@ import (
 	"os"
 
 	"github.com/lwmacct/250300-go-app-demo/app"
-	"github.com/lwmacct/250300-go-app-demo/app/test"
+	"github.com/lwmacct/250300-go-app-demo/app/client"
+	"github.com/lwmacct/250300-go-app-demo/app/server"
+	"github.com/lwmacct/250300-go-app-demo/app/start"
 	"github.com/lwmacct/250300-go-app-demo/app/version"
 
 	"github.com/lwmacct/250300-go-mod-mflag/pkg/mflag"
@@ -21,10 +23,17 @@ func main() {
 		// 命令行参数
 		mc.AddCobra(version.Cmd().Cobra())
 
-		// 开发环境中的测试命令
-		if os.Getenv("ACF_SHOW_TEST") == "1" {
-			mc.AddCobra(test.Cmd().Cobra())
+		// 如果程序只有一个命令, 建议使用 start 入口
+		mc.AddCobra(start.Cmd().Cobra())
+
+		// 客户端,
+		mc.AddCobra(client.Cmd().Cobra())
+
+		// 服务端, 如果不想客户端发现此命令, 则设置 你自己的 salt
+		if os.Getenv("ACF_SERVER_FLAG") == "1" {
+			mc.AddCobra(server.Cmd().Cobra())
 		}
+
 	}
 
 	{
