@@ -1,0 +1,57 @@
+version: "3"
+
+tasks:
+  reinit:
+    desc: "重新初始化 git"
+    cmds:
+      - |
+        _remote_url=$(git remote get-url origin | head -n1)
+        rm -rf .git
+        git init --initial-branch=main
+        touch README.md
+        git add .
+        git commit -m "first commit"
+        git tag -a {{.GIT_TAG_LATEST}} -m "init"
+        git remote add origin ${_remote_url}
+        git config push.autoSetupRemote true
+      - task: clear
+
+  clear:
+    desc: "清除历史提交记录"
+    silent: true
+    cmds:
+      - |
+        if [[ ! -d ".git" ]]; then
+          echo "当前目录不是 git 项目，跳过清除 git 缓存"
+          exit 0
+        fi
+        echo "清除 git 缓存"
+        git rm -r --cached .
+        git checkout --orphan latest_branch
+        git add -A
+        git commit -am "clear commit"
+        git branch -D main
+        git branch -m main
+        git push -f origin main
+
+  push:
+    desc: "推送代码"
+    cmds:
+      - |
+        git add .
+        git commit -m "- {{.CLI_ARGS}}" || true
+        git push origin main || true
+
+  tag:next:
+    desc: "创建 tag"
+    vars:
+      GIT_TAG_NEXT:
+        sh: |
+          echo {{.GIT_TAG_LATEST}} | awk -F. '{print $1"."$2"."$3+1}'
+    deps:
+      - task: push
+        ignore_error: true
+    cmds:
+      - |
+        git tag -a {{.GIT_TAG_NEXT}} -m "- {{.CLI_ARGS}}"
+        git push origin {{.GIT_TAG_NEXT}}
